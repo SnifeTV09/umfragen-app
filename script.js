@@ -14,6 +14,7 @@ const firebaseConfig = {
   measurementId: "G-KPFXK7NV0C"
 };
 
+
 // Firebase starten
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -70,16 +71,14 @@ const adminDiv = document.createElement("div");
 adminDiv.style.display = "none";
 adminDiv.style.margin = "20px";
 adminDiv.innerHTML = `
-  <h3>Admin: Nutzer freischalten</h3>
-  <input id="unlock-id" placeholder="userId eingeben" style="width:300px;"/>
-  <button id="unlock-btn">Freischalten</button>
-  <button id="reset-btn">Alle Stimmen löschen</button>
+  <h3>Admin: Kontrolle</h3>
+  <button id="reset-all-btn">Alle Nutzer freischalten</button>
 `;
 document.body.appendChild(adminDiv);
 
-// Tastenkombination: drücke "u" → Passwortabfrage
+// Tastenkombination: drücke "a" → Passwortabfrage
 document.addEventListener("keydown", (e) => {
-  if (e.key.toLowerCase() === "u") {
+  if (e.key.toLowerCase() === "a") {
     const pw = prompt("Admin-Passwort eingeben:");
     if (pw === adminPassword) {
       adminDiv.style.display = "block";
@@ -87,28 +86,17 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Nutzer freischalten
-document.getElementById("unlock-btn")?.addEventListener("click", async () => {
-  const targetId = document.getElementById("unlock-id").value.trim();
-  if (!targetId) {
-    alert("Bitte eine userId eingeben!");
-    return;
-  }
-  const snapshot = await getDocs(query(collection(db, "votes"), where("userId", "==", targetId)));
-  snapshot.forEach(async (d) => {
-    await deleteDoc(doc(db, "votes", d.id));
-  });
-  alert(`Nutzer ${targetId} wurde freigeschaltet!`);
-});
-
-// Alle Stimmen löschen
-document.getElementById("reset-btn")?.addEventListener("click", async () => {
+// Reset-Logik: alle Stimmen löschen
+document.getElementById("reset-all-btn")?.addEventListener("click", async () => {
   const snapshot = await getDocs(collection(db, "votes"));
   snapshot.forEach(async (d) => {
     await deleteDoc(doc(db, "votes", d.id));
   });
+
+  // Lokale Sperre entfernen (für dich)
   localStorage.removeItem("quizFinished");
-  alert("Alle Stimmen wurden zurückgesetzt!");
+
+  alert("Alle Nutzer wurden freigeschaltet!");
   location.reload();
 });
 
@@ -222,7 +210,6 @@ async function showResults() {
     qTitle.classList.add("result-title");
     qDiv.appendChild(qTitle);
 
-    // Stimmen für diese Frage laden
     const qSnap = await getDocs(query(collection(db, "votes"), where("question", "==", q)));
     const votes = {};
     friends.forEach(f => votes[f] = 0);
