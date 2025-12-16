@@ -5,13 +5,13 @@ import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc
 
 // Deine Firebase Config
 const firebaseConfig = {
-  apiKey: "AIzaSyBuhT82bJRXZThbaokG8hhNaDEtHEXwnH4",
-  authDomain: "werwurdeamehesten.firebaseapp.com",
-  projectId: "werwurdeamehesten",
-  storageBucket: "werwurdeamehesten.firebasestorage.app",
-  messagingSenderId: "90818664368",
-  appId: "1:90818664368:web:31ccc35432dbffa35fe875",
-  measurementId: "G-KPFXK7NV0C"
+  apiKey: "DEIN_API_KEY",
+  authDomain: "DEIN_PROJEKT.firebaseapp.com",
+  projectId: "DEIN_PROJEKT_ID",
+  storageBucket: "DEIN_PROJEKT.appspot.com",
+  messagingSenderId: "DEINE_SENDER_ID",
+  appId: "DEINE_APP_ID",
+  measurementId: "DEINE_MEASUREMENT_ID"
 };
 
 // Firebase starten
@@ -64,7 +64,7 @@ const questions = [
 ];
 
 // --- Admin Interface ---
-const adminPassword = "4336373734"; // hier dein Passwort einsetzen
+const adminPassword = "MEIN_GEHEIMES_PASSWORT"; // hier dein Passwort einsetzen
 
 const adminDiv = document.createElement("div");
 adminDiv.style.display = "none";
@@ -125,6 +125,14 @@ document.getElementById("delete-all-btn")?.addEventListener("click", async () =>
 });
 
 // --- Quiz Logik ---
+
+// NEU: Prüfen ob Datenbank leer ist → Sperre aufheben
+(async () => {
+  const snapshot = await getDocs(collection(db, "votes"));
+  if (snapshot.empty) {
+    localStorage.removeItem("quizFinished");
+  }
+})();
 
 // Prüfen ob Quiz schon beendet wurde
 if (localStorage.getItem("quizFinished") === "true") {
@@ -207,7 +215,7 @@ answerButtons.forEach((btn, i) => {
       loadQuestion();
     }, 500);
 
-        // Wenn letzte Frage beantwortet → Quiz als beendet markieren
+    // Wenn letzte Frage beantwortet → Quiz als beendet markieren
     if (currentIndex + 1 >= questions.length) {
       localStorage.setItem("quizFinished", "true");
     }
@@ -241,7 +249,7 @@ async function showResults() {
       votes[doc.data().votedFor]++;
     });
 
-    const maxVotes = Math.max(...friends.map(f => votes[f]));
+       const maxVotes = Math.max(...friends.map(f => votes[f]));
     const totalVotes = friends.reduce((sum, f) => sum + votes[f], 0);
 
     friends.forEach(f => {
