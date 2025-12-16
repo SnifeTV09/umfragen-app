@@ -14,7 +14,6 @@ const firebaseConfig = {
   measurementId: "G-KPFXK7NV0C"
 };
 
-
 // Firebase starten
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -72,7 +71,10 @@ adminDiv.style.display = "none";
 adminDiv.style.margin = "20px";
 adminDiv.innerHTML = `
   <h3>Admin: Kontrolle</h3>
+  <input id="unlock-id" placeholder="userId eingeben" style="width:300px;"/>
+  <button id="unlock-btn">Einzelnen Nutzer freischalten</button>
   <button id="reset-all-btn">Alle Nutzer freischalten</button>
+  <button id="delete-all-btn">Alle Stimmen löschen</button>
 `;
 document.body.appendChild(adminDiv);
 
@@ -86,17 +88,39 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Reset-Logik: alle Stimmen löschen
+// Einzelnen Nutzer freischalten
+document.getElementById("unlock-btn")?.addEventListener("click", async () => {
+  const targetId = document.getElementById("unlock-id").value.trim();
+  if (!targetId) {
+    alert("Bitte eine userId eingeben!");
+    return;
+  }
+  const snapshot = await getDocs(query(collection(db, "votes"), where("userId", "==", targetId)));
+  snapshot.forEach(async (d) => {
+    await deleteDoc(doc(db, "votes", d.id));
+  });
+  alert(`Nutzer ${targetId} wurde freigeschaltet!`);
+});
+
+// Alle Nutzer freischalten (alle Stimmen löschen)
 document.getElementById("reset-all-btn")?.addEventListener("click", async () => {
   const snapshot = await getDocs(collection(db, "votes"));
   snapshot.forEach(async (d) => {
     await deleteDoc(doc(db, "votes", d.id));
   });
-
-  // Lokale Sperre entfernen (für dich)
   localStorage.removeItem("quizFinished");
-
   alert("Alle Nutzer wurden freigeschaltet!");
+  location.reload();
+});
+
+// Alle Stimmen komplett löschen (Reset für die Runde)
+document.getElementById("delete-all-btn")?.addEventListener("click", async () => {
+  const snapshot = await getDocs(collection(db, "votes"));
+  snapshot.forEach(async (d) => {
+    await deleteDoc(doc(db, "votes", d.id));
+  });
+  localStorage.removeItem("quizFinished");
+  alert("Alle Stimmen wurden gelöscht! Neues Spiel kann starten.");
   location.reload();
 });
 
@@ -183,7 +207,7 @@ answerButtons.forEach((btn, i) => {
       loadQuestion();
     }, 500);
 
-    // Wenn letzte Frage beantwortet → Quiz als beendet markieren
+        // Wenn letzte Frage beantwortet → Quiz als beendet markieren
     if (currentIndex + 1 >= questions.length) {
       localStorage.setItem("quizFinished", "true");
     }
