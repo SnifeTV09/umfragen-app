@@ -248,7 +248,7 @@ async function showResults() {
       votes[doc.data().votedFor]++;
     });
 
-       const maxVotes = Math.max(...friends.map(f => votes[f]));
+        const maxVotes = Math.max(...friends.map(f => votes[f]));
     const totalVotes = friends.reduce((sum, f) => sum + votes[f], 0);
 
     friends.forEach(f => {
@@ -281,4 +281,3 @@ async function showResults() {
     quizContainer.appendChild(qDiv);
   }
 }
-
